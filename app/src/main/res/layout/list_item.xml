@@ -25,7 +25,7 @@
         tools:text="nuryadin.cjr@gmail.com" />
 
     <TextView
-        android:id="@+id/tvMobile"
+        android:id="@+id/tvPhone"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         tools:text="+62 81541181633"

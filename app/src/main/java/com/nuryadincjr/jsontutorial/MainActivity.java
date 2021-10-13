@@ -2,30 +2,32 @@ package com.nuryadincjr.jsontutorial;
 
 import android.os.Bundle;
 import android.util.Log;
-import android.widget.ListAdapter;
-import android.widget.SimpleAdapter;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.recyclerview.widget.LinearLayoutManager;
 
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
 import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
+import com.nuryadincjr.jsontutorial.contacts.Address;
+import com.nuryadincjr.jsontutorial.contacts.Company;
+import com.nuryadincjr.jsontutorial.contacts.Constaint;
+import com.nuryadincjr.jsontutorial.contacts.Contact;
+import com.nuryadincjr.jsontutorial.contacts.Geo;
 import com.nuryadincjr.jsontutorial.databinding.ActivityMainBinding;
+import com.nuryadincjr.jsontutorial.pojo.ContactAdapter;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 
 public class MainActivity extends AppCompatActivity {
 
     private ActivityMainBinding binding;
-//    private final String URL = "https://api.androidhive.info/contacts/";
-    private final String URL = "https://app.fakejson.com/q/QlRaybY9?token=EwuNZ5kIloYxNoVml1K86g";
-    private ArrayList<HashMap<String, String>> contactList;
+    private ArrayList<Contact> contactList;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -36,56 +38,91 @@ public class MainActivity extends AppCompatActivity {
         setContentView(binding.getRoot());
 
         contactList = new ArrayList<>();
-
         getData();
+
+        binding.srLayaout.setColorSchemeResources(android.R.color.holo_orange_dark);
+        binding.srLayaout.setOnRefreshListener(() -> {
+            getData();
+            binding.srLayaout.setRefreshing(false);
+        });
+
+        ContactAdapter adapter = new ContactAdapter(contactList, this);
+        binding.lvItem.setLayoutManager(new LinearLayoutManager(this));
+        binding.lvItem.setAdapter(adapter);
     }
 
     private void getData() {
         RequestQueue queue = Volley.newRequestQueue(this);
 
-        StringRequest stringRequest = new StringRequest(Request.Method.GET, URL,
+        StringRequest stringRequest = new StringRequest(Request.Method.GET, Constaint.URL,
                 response -> {
                     try {
-                        JSONObject jsonPost = new JSONObject(response);
-                        JSONArray contacts = jsonPost.getJSONArray("contacts");
+                        JSONArray contacts = new JSONArray(response);
 
-                        String id, name = null, email = null, address, gender, mobile, home, office;
                         for (int i = 0; i < contacts.length(); i++) {
+                            JSONObject objContact = contacts.getJSONObject(i);
+                            String name, username, email, phone, website;
+                            int id = objContact.getInt("id");
+                            name = objContact.getString("name");
+                            username = objContact.getString("username");
+                            email = objContact.getString("email");
 
-                            JSONObject object1 = contacts.getJSONObject(i);
-                            id = object1.getString("id");
-                            name = object1.getString("name");
-                            email = object1.getString("email");
-                            address = object1.getString("address");
-                            gender = object1.getString("gender");
+                            JSONObject objAddress = objContact.getJSONObject("address");
+                            String street, suite, city, zipcode;
+                            street = objAddress.getString("street");
+                            suite = objAddress.getString("suite");
+                            city = objAddress.getString("city");
+                            zipcode = objAddress.getString("zipcode");
 
-                            JSONObject phone = object1.getJSONObject("phone");
-                            mobile = phone.getString("mobile");
-                            home = phone.getString("home");
-                            office = phone.getString("office");
+                            JSONObject objGeo = objAddress.getJSONObject("geo");
+                            String lat, lng;
+                            lat = objGeo.getString("lat");
+                            lng = objGeo.getString("lng");
 
-                            HashMap<String, String> contact = new HashMap<>();
+                            phone = objContact.getString("phone");
+                            website = objContact.getString("website");
 
-                            contact.put("id", id);
-                            contact.put("name", name);
-                            contact.put("email", email);
-                            contact.put("mobile", mobile);
+                            JSONObject obCompany = objContact.getJSONObject("company");
+                            String comName, catchPhrase, bs;
+                            comName = obCompany.getString("name");
+                            catchPhrase = obCompany.getString("catchPhrase");
+                            bs = obCompany.getString("bs");
 
+                            Contact contact = new Contact();
+                            contact.setId(id);
+                            contact.setName(name);
+                            contact.setUsername(username);
+                            contact.setEmail(email);
+
+                            Address address = new Address();
+                            address.setStreet(street);
+                            address.setSuite(suite);
+                            address.setCity(city);
+                            address.setZipcode(zipcode);
+
+                            Geo geo = new Geo();
+                            geo.setLat(lat);
+                            geo.setLng(lng);
+                            address.setGeo(geo);
+
+                            contact.setAddress(address);
+                            contact.setPhone(phone);
+                            contact.setWebsite(website);
+
+                            Company company = new Company();
+                            company.setName(comName);
+                            company.setCatchPhrase(catchPhrase);
+                            company.setBs(bs);
+
+                            contact.setCompany(company);
                             contactList.add(contact);
                         }
 
-                        ListAdapter adapter = new SimpleAdapter(
-                                MainActivity.this,
-                                contactList, R.layout.list_item,
-                                new String[]{"name", "email", "mobile"},
-                                new int[]{R.id.tvName, R.id.tvEmail, R.id.tvMobile});
-
-                        binding.rvList.setAdapter(adapter);
-
                     } catch (JSONException e) {
                         e.printStackTrace();
+                        Log.e(Constaint.TAG, e.toString());
                     }
-                }, error -> Log.e("Error Response", error.toString()));
+                }, error -> Log.e(Constaint.TAG, error.toString()));
         queue.add(stringRequest);
     }
 }
