@@ -1,16 +1,15 @@
 package com.nuryadincjr.jsontutorial.pojo;
 
-import androidx.annotation.NonNull;
-import androidx.recyclerview.widget.RecyclerView;
+import android.view.View;
 
 import com.nuryadincjr.jsontutorial.databinding.ListItemBinding;
 
-public class ContactViewHolder extends RecyclerView.ViewHolder {
-
+public class ContactViewHolder {
+    public View view;
     private ListItemBinding binding;
 
-    public ContactViewHolder(@NonNull ListItemBinding binding) {
-        super(binding.getRoot());
+    public ContactViewHolder(ListItemBinding binding) {
+        this.view = binding.getRoot();
         this.binding = binding;
     }
 
@@ -19,5 +18,4 @@ public class ContactViewHolder extends RecyclerView.ViewHolder {
         binding.tvEmail.setText(email);
         binding.tvPhone.setText(phone);
     }
-
 }

@@ -2,9 +2,9 @@ package com.nuryadincjr.jsontutorial;
 
 import android.os.Bundle;
 import android.util.Log;
+import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.recyclerview.widget.LinearLayoutManager;
 
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
@@ -28,6 +28,7 @@ public class MainActivity extends AppCompatActivity {
 
     private ActivityMainBinding binding;
     private ArrayList<Contact> contactList;
+    private ContactAdapter adapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -42,13 +43,10 @@ public class MainActivity extends AppCompatActivity {
 
         binding.srLayaout.setColorSchemeResources(android.R.color.holo_orange_dark);
         binding.srLayaout.setOnRefreshListener(() -> {
+            adapter.clear();
             getData();
             binding.srLayaout.setRefreshing(false);
         });
-
-        ContactAdapter adapter = new ContactAdapter(contactList, this);
-        binding.lvItem.setLayoutManager(new LinearLayoutManager(this));
-        binding.lvItem.setAdapter(adapter);
     }
 
     private void getData() {
@@ -57,10 +55,10 @@ public class MainActivity extends AppCompatActivity {
         StringRequest stringRequest = new StringRequest(Request.Method.GET, Constaint.URL,
                 response -> {
                     try {
-                        JSONArray contacts = new JSONArray(response);
+                        JSONArray getPost = new JSONArray(response);
 
-                        for (int i = 0; i < contacts.length(); i++) {
-                            JSONObject objContact = contacts.getJSONObject(i);
+                        for (int i = 0; i < getPost.length(); i++) {
+                            JSONObject objContact = getPost.getJSONObject(i);
                             String name, username, email, phone, website;
                             int id = objContact.getInt("id");
                             name = objContact.getString("name");
@@ -88,35 +86,17 @@ public class MainActivity extends AppCompatActivity {
                             catchPhrase = obCompany.getString("catchPhrase");
                             bs = obCompany.getString("bs");
 
-                            Contact contact = new Contact();
-                            contact.setId(id);
-                            contact.setName(name);
-                            contact.setUsername(username);
-                            contact.setEmail(email);
+                            Geo geo = new Geo(lat, lng);
+                            Address address = new Address(street, suite, city, zipcode, geo);
+                            Company company = new Company(comName, catchPhrase, bs);
+                            Contact contact = new Contact(id, name, username, email,
+                                    address, phone, website, company);
 
-                            Address address = new Address();
-                            address.setStreet(street);
-                            address.setSuite(suite);
-                            address.setCity(city);
-                            address.setZipcode(zipcode);
-
-                            Geo geo = new Geo();
-                            geo.setLat(lat);
-                            geo.setLng(lng);
-                            address.setGeo(geo);
-
-                            contact.setAddress(address);
-                            contact.setPhone(phone);
-                            contact.setWebsite(website);
-
-                            Company company = new Company();
-                            company.setName(comName);
-                            company.setCatchPhrase(catchPhrase);
-                            company.setBs(bs);
-
-                            contact.setCompany(company);
                             contactList.add(contact);
                         }
+
+                        adapter = new ContactAdapter(this, contactList);
+                        binding.lvItem.setAdapter(adapter);
 
                     } catch (JSONException e) {
                         e.printStackTrace();

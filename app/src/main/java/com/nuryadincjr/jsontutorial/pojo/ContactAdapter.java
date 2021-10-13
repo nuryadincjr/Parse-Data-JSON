@@ -1,47 +1,46 @@
 package com.nuryadincjr.jsontutorial.pojo;
 
 import android.content.Context;
+import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ArrayAdapter;
 
 import androidx.annotation.NonNull;
-import androidx.recyclerview.widget.RecyclerView;
+import androidx.annotation.Nullable;
 
+import com.nuryadincjr.jsontutorial.contacts.Constaint;
 import com.nuryadincjr.jsontutorial.contacts.Contact;
 import com.nuryadincjr.jsontutorial.databinding.ListItemBinding;
 
 import java.util.ArrayList;
-import java.util.List;
 
-public class ContactAdapter extends RecyclerView.Adapter<ContactViewHolder> {
+public class ContactAdapter extends ArrayAdapter<Contact> {
 
-    private final ArrayList<Contact> data;
-    private final Context context;
-
-    public ContactAdapter(ArrayList<Contact> data, Context context) {
-        this.data = data;
-        this.context = context;
+    public ContactAdapter(@NonNull Context context, ArrayList<Contact> contact) {
+        super(context, 0, contact);
     }
 
     @NonNull
     @Override
-    public ContactViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        ListItemBinding binding = ListItemBinding.inflate(
-                LayoutInflater.from(parent.getContext()), parent, false);
+    public View getView(int position, @Nullable View convertView, @NonNull ViewGroup parent) {
+        Contact contact = getItem(position);
+        try {
+            ContactViewHolder holder = null;
+            if (convertView == null) {
+                ListItemBinding binding = ListItemBinding.inflate(
+                        LayoutInflater.from(parent.getContext()), parent, false);
+                holder = new ContactViewHolder(binding);
 
-        return new ContactViewHolder(binding);
+                holder.setDataToView(contact.getName(),
+                        contact.getEmail(), contact.getPhone());
+            }
+            return holder.view;
+        } catch (Exception e) {
+            Log.e(Constaint.TAG, e.toString());
+        }
+        return convertView;
     }
 
-    @Override
-    public void onBindViewHolder(@NonNull ContactViewHolder holder, int position) {
-        String name = data.get(position).getName();
-        String email = data.get(position).getEmail();
-        String phone = data.get(position).getPhone();
-        holder.setDataToView(name, email, phone);
-    }
-
-    @Override
-    public int getItemCount() {
-        return data.size();
-    }
 }
