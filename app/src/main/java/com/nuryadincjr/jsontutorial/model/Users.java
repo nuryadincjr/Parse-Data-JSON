@@ -1,28 +1,31 @@
-package com.nuryadincjr.jsontutorial.contacts;
+package com.nuryadincjr.jsontutorial.model;
 
-public class Contact {
+import com.google.gson.annotations.SerializedName;
+
+public class Users {
+    @SerializedName("id")
     private int id;
+
+    @SerializedName("name")
     private String name;
+
+    @SerializedName("username")
     private String username;
+
+    @SerializedName("email")
     private String email;
+
+    @SerializedName("address")
     private Address address;
+
+    @SerializedName("phone")
     private String phone;
+
+    @SerializedName("website")
     private String website;
+
+    @SerializedName("company")
     private Company company;
-
-    public Contact() {
-    }
-
-    public Contact(int id, String name, String username, String email, Address address, String phone, String website, Company company) {
-        this.id = id;
-        this.name = name;
-        this.username = username;
-        this.email = email;
-        this.address = address;
-        this.phone = phone;
-        this.website = website;
-        this.company = company;
-    }
 
     public int getId() {
         return id;

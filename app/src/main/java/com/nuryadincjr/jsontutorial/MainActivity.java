@@ -5,29 +5,25 @@ import android.util.Log;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.recyclerview.widget.LinearLayoutManager;
 
-import com.android.volley.Request;
-import com.android.volley.RequestQueue;
-import com.android.volley.toolbox.StringRequest;
-import com.android.volley.toolbox.Volley;
-import com.nuryadincjr.jsontutorial.contacts.Address;
-import com.nuryadincjr.jsontutorial.contacts.Company;
-import com.nuryadincjr.jsontutorial.contacts.Constaint;
-import com.nuryadincjr.jsontutorial.contacts.Contact;
-import com.nuryadincjr.jsontutorial.contacts.Geo;
+import com.nuryadincjr.jsontutorial.model.Users;
 import com.nuryadincjr.jsontutorial.databinding.ActivityMainBinding;
+import com.nuryadincjr.jsontutorial.network.ApiService;
+import com.nuryadincjr.jsontutorial.network.NetworkClient;
 import com.nuryadincjr.jsontutorial.pojo.ContactAdapter;
 
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
-
 import java.util.ArrayList;
+import java.util.List;
+
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
 public class MainActivity extends AppCompatActivity {
 
     private ActivityMainBinding binding;
-    private ArrayList<Contact> contactList;
+    private ArrayList<Users> usersList;
     private ContactAdapter adapter;
 
     @Override
@@ -38,71 +34,35 @@ public class MainActivity extends AppCompatActivity {
         binding = ActivityMainBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
 
-        contactList = new ArrayList<>();
+        usersList = new ArrayList<>();
+        adapter = new ContactAdapter(usersList, this);
+        binding.rvItem.setLayoutManager(new LinearLayoutManager(this));
+        binding.rvItem.setAdapter(adapter);
         getData();
 
-        binding.srLayaout.setColorSchemeResources(android.R.color.holo_orange_dark);
         binding.srLayaout.setOnRefreshListener(() -> {
-            adapter.clear();
             getData();
             binding.srLayaout.setRefreshing(false);
         });
     }
 
     private void getData() {
-        RequestQueue queue = Volley.newRequestQueue(this);
+        NetworkClient.getInstance().create(ApiService.class).getUsers().enqueue(new Callback<List<Users>>() {
+            @Override
+            public void onResponse(Call<List<Users>> call, Response<List<Users>> response) {
+                if(response.code() == 200 && response.body() != null) {
+                    usersList.clear();
+                    usersList.addAll(response.body());
+                    adapter.notifyDataSetChanged();
+                }
+            }
 
-        StringRequest stringRequest = new StringRequest(Request.Method.GET, Constaint.URL,
-                response -> {
-                    try {
-                        JSONArray getPost = new JSONArray(response);
-
-                        for (int i = 0; i < getPost.length(); i++) {
-                            JSONObject objContact = getPost.getJSONObject(i);
-                            String name, username, email, phone, website;
-                            int id = objContact.getInt("id");
-                            name = objContact.getString("name");
-                            username = objContact.getString("username");
-                            email = objContact.getString("email");
-
-                            JSONObject objAddress = objContact.getJSONObject("address");
-                            String street, suite, city, zipcode;
-                            street = objAddress.getString("street");
-                            suite = objAddress.getString("suite");
-                            city = objAddress.getString("city");
-                            zipcode = objAddress.getString("zipcode");
-
-                            JSONObject objGeo = objAddress.getJSONObject("geo");
-                            String lat, lng;
-                            lat = objGeo.getString("lat");
-                            lng = objGeo.getString("lng");
-
-                            phone = objContact.getString("phone");
-                            website = objContact.getString("website");
-
-                            JSONObject obCompany = objContact.getJSONObject("company");
-                            String comName, catchPhrase, bs;
-                            comName = obCompany.getString("name");
-                            catchPhrase = obCompany.getString("catchPhrase");
-                            bs = obCompany.getString("bs");
-
-                            Geo geo = new Geo(lat, lng);
-                            Address address = new Address(street, suite, city, zipcode, geo);
-                            Company company = new Company(comName, catchPhrase, bs);
-                            Contact contact = new Contact(id, name, username, email,
-                                    address, phone, website, company);
-
-                            contactList.add(contact);
-                        }
-
-                        adapter = new ContactAdapter(this, contactList);
-                        binding.lvItem.setAdapter(adapter);
-
-                    } catch (JSONException e) {
-                        e.printStackTrace();
-                        Log.e(Constaint.TAG, e.toString());
-                    }
-                }, error -> Log.e(Constaint.TAG, error.toString()));
-        queue.add(stringRequest);
+            @Override
+            public void onFailure(Call<List<Users>> call, Throwable t) {
+                Toast.makeText(MainActivity.this, "Error: " + t.getLocalizedMessage(),
+                        Toast.LENGTH_SHORT).show();
+                Log.d("TAG", t.getMessage());
+            }
+        });
     }
 }

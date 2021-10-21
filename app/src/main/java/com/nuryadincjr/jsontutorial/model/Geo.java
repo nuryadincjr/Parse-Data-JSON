@@ -1,16 +1,13 @@
-package com.nuryadincjr.jsontutorial.contacts;
+package com.nuryadincjr.jsontutorial.model;
+
+import com.google.gson.annotations.SerializedName;
 
 public class Geo {
+    @SerializedName("lat")
     private String lat;
+
+    @SerializedName("lng")
     private String lng;
-
-    public Geo() {
-    }
-
-    public Geo(String lat, String lng) {
-        this.lat = lat;
-        this.lng = lng;
-    }
 
     public String getLat() {
         return lat;

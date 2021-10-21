@@ -1,21 +1,22 @@
 package com.nuryadincjr.jsontutorial.pojo;
 
-import android.view.View;
+import androidx.recyclerview.widget.RecyclerView;
 
 import com.nuryadincjr.jsontutorial.databinding.ListItemBinding;
+import com.nuryadincjr.jsontutorial.model.Users;
 
-public class ContactViewHolder {
-    public View view;
+public class ContactViewHolder extends RecyclerView.ViewHolder {
+
     private ListItemBinding binding;
 
     public ContactViewHolder(ListItemBinding binding) {
-        this.view = binding.getRoot();
+        super(binding.getRoot());
         this.binding = binding;
     }
 
-    public void setDataToView(String name, String email, String phone) {
-        binding.tvName.setText(name);
-        binding.tvEmail.setText(email);
-        binding.tvPhone.setText(phone);
+    public void setDataToView(Users item) {
+        binding.tvName.setText(item.getName());
+        binding.tvEmail.setText(item.getEmail());
+        binding.tvPhone.setText(item.getPhone());
     }
 }
